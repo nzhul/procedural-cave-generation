@@ -9,6 +9,8 @@ public class MeshGenerator : MonoBehaviour
 	List<Vector3> vertices;
 	List<int> triangles;
 
+	Dictionary<int, List<Triangle>> triangleDictionary = new Dictionary<int, List<Triangle>>();
+
 	public void GenerateMesh(int[,] map, float squareSize)
 	{
 		squareGrid = new SquareGrid(map, squareSize);
@@ -42,13 +44,13 @@ public class MeshGenerator : MonoBehaviour
 
 			// 1 points:
 			case 1:
-				MeshFromPoints(square.centerBottom, square.bottomLeft, square.centerLeft);
+				MeshFromPoints(square.centerLeft, square.centerBottom, square.bottomLeft);
 				break;
 			case 2:
-				MeshFromPoints(square.centerRight, square.bottomRight, square.centerBottom);
+				MeshFromPoints(square.bottomRight, square.centerBottom, square.centerRight);
 				break;
 			case 4:
-				MeshFromPoints(square.centerTop, square.topRight, square.centerRight);
+				MeshFromPoints(square.topRight, square.centerRight, square.centerTop);
 				break;
 			case 8:
 				MeshFromPoints(square.topLeft, square.centerTop, square.centerLeft);
@@ -126,6 +128,40 @@ public class MeshGenerator : MonoBehaviour
 		triangles.Add(a.vertexIndex);
 		triangles.Add(b.vertexIndex);
 		triangles.Add(c.vertexIndex);
+
+		Triangle triangle = new Triangle(a.vertexIndex, b.vertexIndex, c.vertexIndex);
+		AddTriangleToDictionary(triangle.vertexIndexA, triangle);
+		AddTriangleToDictionary(triangle.vertexIndexB, triangle);
+		AddTriangleToDictionary(triangle.vertexIndexC, triangle);
+		// TODO: 10:50
+	}
+
+	void AddTriangleToDictionary(int vertexIndexKey, Triangle triangle)
+	{
+		if (triangleDictionary.ContainsKey(vertexIndexKey))
+		{
+			triangleDictionary[vertexIndexKey].Add(triangle);
+		}
+		else
+		{
+			List<Triangle> triangleList = new List<Triangle>();
+			triangleList.Add(triangle);
+			triangleDictionary.Add(vertexIndexKey, triangleList);
+		}
+	}
+
+	struct Triangle
+	{
+		public int vertexIndexA;
+		public int vertexIndexB;
+		public int vertexIndexC;
+
+		public Triangle(int a, int b, int c)
+		{
+			vertexIndexA = a;
+			vertexIndexB = b;
+			vertexIndexC = c;
+		}
 	}
 
 	void OnDrawGizmos()
